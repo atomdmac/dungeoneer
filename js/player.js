@@ -49,7 +49,11 @@ var Player = Tile.extend({
 	_onMove: function () {
 		var visibleCells = this.get('map').getVisibleAt(this.get('x'), this.get('y'));
 		visibleCells.forEach(function (cell) {
-			cell.setVisibility(true);
+			try {
+				cell.setVisibility(true);
+			} catch (e) {
+				debugger;
+			}
 		});
 	}
 });

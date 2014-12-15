@@ -8,7 +8,7 @@ var Cell = Backbone.Collection.extend({
 		x: 0,
 		y: 0,
 		// Whether or not the player has seen this area.
-		seen: true
+		seen: false
 	},
 
 	attributes: null,
@@ -43,7 +43,8 @@ var Cell = Backbone.Collection.extend({
 	},
 
 	setVisibility: function (flag) {
-		this.attributes.seen = _.isBoolean(flag) ? flag : true;
+		this.attributes.seen = _.isBoolean(flag) ? flag : false;
+		this.trigger('change', this);
 	},
 
 	isVisible: function () {

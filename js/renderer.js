@@ -11,7 +11,7 @@ return function () {
 	}
 
 	this.update = function (cell) {
-		// if(cell.isVisible()) {
+		if(cell.isVisible()) {
 			cell.forEach(function (tile, index) {
 				_display.draw(
 					tile.get('x'), 
@@ -21,7 +21,7 @@ return function () {
 					tile.get('backgroundColor')
 				);
 			});
-		// }
+		}
 	}
 
 	this.init = function (map) {

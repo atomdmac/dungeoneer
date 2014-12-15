@@ -70,7 +70,8 @@ return function (options) {
 					type       : 'wall', 
 					ascii      : '#',
 					passable   : false, 
-					transparent: false
+					transparent: false,
+					seen       : false
 				});
 			} else {
 				terrain = new Tile({
@@ -80,7 +81,8 @@ return function (options) {
 					ascii      : ' ',
 					passable   : true,
 					transparent: true,
-					backgroundColor: '#333'
+					backgroundColor: '#333',
+					seen       : false
 				});
 				self.passableCells.push(terrain);
 			}
@@ -93,26 +95,22 @@ return function (options) {
 	this.getVisibleAt = function (x, y) {
 		/* input callback */
 		var self = this,
-		xx = x,
-		yy = y,
-		lightPasses = function(x, y) {
-		    var cell = self.get(x, y),
-		    	result;
-		    if(x == xx && y == yy) {
-		    	return true;
-		    } else if(cell) {
-		    	result = cell.isTransparent();
+			visibleCells = [];
+
+		function lightPasses (x, y) {
+		    var cell = self.get(x, y);
+		    if(cell) {
+		    	return cell.isPassable();
 		    } else {
 			    return false;
 		    }
 		}
 
-		var fov = new ROT.FOV.PreciseShadowcasting(lightPasses),
-			visibleCells = [];
+		var fov = new ROT.FOV.PreciseShadowcasting(lightPasses);
 
 		/* output callback */
 		fov.compute(x, y, 10, function(x, y, r, visibility) {
-		    visibleCells.push(self.get(x, y));
+		    if(visibility) visibleCells.push(self.get(x, y));
 		});
 
 		return visibleCells;
@@ -131,7 +129,11 @@ return function (options) {
 	this.get = function (x, y) {
 		if(x < 0 || x > this.cells.length) return false;
 		if(y < 0 || y > this.cells[0].length) return false;
-		return this.cells[x][y] || false;
+		try {
+			return this.cells[x][y];
+		} catch (e) {
+			return false;
+		}
 	};
 
 	this.isPassable = function (x, y) {
@@ -263,12 +265,16 @@ return function (options) {
 		this.trigger('remove', tile, cell);
 	}, this);
 
-	this._onTileChange = _.bind(function (tile) {
-		var cell = this.get(
-			tile.get('x'),
-			tile.get('y')
-		);
-		this.trigger('change', cell);
+	this._onTileChange = _.bind(function (source) {
+		if(source instanceof Cell) {
+			this.trigger('change', source);
+		} else {
+			var cell = this.get(
+				source.get('x'),
+				source.get('y')
+			);
+			this.trigger('change', cell);
+		}
 	}, this);
 }
 
