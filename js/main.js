@@ -55,6 +55,36 @@ function (Map, Renderer, Player, ROT, Backbone) {
 
 	map.add(player);
 
+	function handleKeyboardInput(event) {
+		switch(event.keyCode) {
+			case ROT.VK_K:
+				player._moveN();
+				break;
+			case ROT.VK_U:
+				player._moveNE();
+				break;
+			case ROT.VK_L:
+				player._moveE();
+				break;
+			case ROT.VK_N:
+				player._moveSE();
+				break;
+			case ROT.VK_J:
+				player._moveS();
+				break;
+			case ROT.VK_B:
+				player._moveSW();
+				break;
+			case ROT.VK_H:
+				player._moveW();
+				break;
+			case ROT.VK_Y:
+				player._moveNW();
+				break;
+		}
+	}
+	document.addEventListener('keydown', handleKeyboardInput);
+
 	/*
 	console.log('I started and here is my copy of ROT: ', ROT);
 '],
