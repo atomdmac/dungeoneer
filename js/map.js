@@ -54,10 +54,6 @@ return function (options) {
 
 		generator.create(function (x, y, type) {
 			cell = new Cell();
-			cell.set({
-				x: x, 
-				y: y
-			});
 
 			cell.on('add'   , self._onAddToCell     );
 			cell.on('remove', self._onRemoveFromCell);
@@ -92,25 +88,31 @@ return function (options) {
 		});
 	};
 
-	this.getVisibleAt = function (x, y) {
+	this.getVisibleAt = function (x, y, callback) {
 		/* input callback */
 		var self = this,
 			visibleCells = [];
 
 		function lightPasses (x, y) {
 		    var cell = self.get(x, y);
-		    if(cell) {
-		    	return cell.isPassable();
-		    } else {
-			    return false;
-		    }
+		    try {
+		    	return cell ? cell.isTransparent() : false;
+			} catch (e) {
+				debugger;
+			}
 		}
 
 		var fov = new ROT.FOV.PreciseShadowcasting(lightPasses);
 
 		/* output callback */
 		fov.compute(x, y, 10, function(x, y, r, visibility) {
-		    if(visibility) visibleCells.push(self.get(x, y));
+		    if(visibility) {
+		    	var cell = self.get(x, y);
+		    	if(cell) {
+			    	visibleCells.push(cell);
+					if(typeof callback === 'function') callback(x, y, r, cell);
+		    	}
+		    }
 		});
 
 		return visibleCells;
@@ -136,11 +138,23 @@ return function (options) {
 		}
 	};
 
+	this.isTransparent = function (x, y) {
+		var cell = this.get(x, y);
+		if(cell) return cell.isTransparent();
+		return false;
+	};
+
 	this.isPassable = function (x, y) {
 		var cell = this.get(x, y);
 		if(cell) return cell.isPassable();
 		return false;
-	}
+	};
+
+	this.getMonstersAt = function (x, y) {
+		var cell = this.get(x, y);
+		if(cell) return cell.getMonsters();
+		return false;
+	};
 
 	/**
 	 * Return all entities in cells visible from the given point.
@@ -196,7 +210,11 @@ return function (options) {
 	 * @return {Void}
 	 */
 	this.add = function (tile) {
+		try{
+
 		if(this.cells[tile.get('x')][tile.get('y')]) {
+
+			if(_.size(tile.attributes) === 0) console.log (tile);
 
 			// Add to spacial map.
 			this.cells[tile.get('x')][tile.get('y')].add(tile);
@@ -209,7 +227,12 @@ return function (options) {
 			// Listen for events.
 			// tile.signals.move.add(this._onMove);
 		}
+
+	} catch (e) {
+		debugger;
 	}
+
+	};
 
 	/**
 	 * Remove the given entity from the map.
@@ -223,7 +246,7 @@ return function (options) {
 				return false;
 			});
 		}
-	}
+	};
 
 	// Does this make sense?  If you move the entity, it can just 
 	/*
@@ -276,6 +299,6 @@ return function (options) {
 			this.trigger('change', cell);
 		}
 	}, this);
-}
+};
 
 });

@@ -5,18 +5,16 @@ function (Backbone, _, Tile) {
 var Cell = Backbone.Collection.extend({
 
 	defaults: {
-		x: 0,
-		y: 0,
-		// Whether or not the player has seen this area.
-		seen: false
+		// Whether or not the player has discovered this area.
+		discovered: false
 	},
 
 	attributes: null,
 
-	initialize: function (attributes) {
+	initialize: function () {
 		// Merge defaults with provided attributes.
 		this.attributes = {};
-		_.extend(this.attributes, attributes, this.defaults);
+		_.extend(this.attributes, this.defaults);
 	},
 
 	/*
@@ -42,13 +40,9 @@ var Cell = Backbone.Collection.extend({
 		return 0;
 	},
 
-	setVisibility: function (flag) {
-		this.attributes.seen = _.isBoolean(flag) ? flag : false;
-		this.trigger('change', this);
-	},
-
-	isVisible: function () {
-		return this.attributes.seen;
+	isDiscovered: function (discovered) {
+		if(typeof discovered === 'boolean') this.attributes.discovered = discovered;
+		return this.attributes.discovered;
 	},
 
 	isPassable: function () {
@@ -57,6 +51,10 @@ var Cell = Backbone.Collection.extend({
 
 	isTransparent: function () {
 		return !this.where({transparent:false}).length;
+	},
+
+	getMonsters: function () {
+		return this.where({type:'monster'});
 	}
 });
 
